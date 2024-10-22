@@ -1,11 +1,15 @@
 package test.analytics;
 
 import analytics.HabitAnalytics;
-import entity.Habit;
-import entity.HabitLog;
+import core.model.Habit;
+import core.model.HabitLog;
+import application.usecase.HabitManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,28 +23,34 @@ class HabitAnalyticsTest {
     @Mock
     private Habit habitMock;
 
+    @Mock
+    private HabitManager habitServiceMock;
+
     private HabitAnalytics habitAnalytics;
 
     @BeforeEach
     void setUp() {
-        habitAnalytics = new HabitAnalytics();
-        habitMock = mock(Habit.class);
+        MockitoAnnotations.openMocks(this);
+        habitAnalytics = new HabitAnalytics(habitServiceMock);
     }
 
     @Test
+    @DisplayName("Генерация ежедневного отчета")
     void testGenerateDailyReport() {
         LocalDate today = LocalDate.now();
         HabitLog completedLog = new HabitLog(today, true);
 
         when(habitMock.getTitle()).thenReturn("Чай");
-        when(habitMock.getLogsForPeriod(today, today)).thenReturn(Collections.singletonList(completedLog));
+        when(habitServiceMock.getLogsForPeriod(habitMock, today, today))
+                .thenReturn(Collections.singletonList(completedLog));
 
         habitAnalytics.generateDailyReport(habitMock);
 
-        verify(habitMock).getLogsForPeriod(today, today);
+        verify(habitServiceMock).getLogsForPeriod(habitMock, today, today);
     }
 
     @Test
+    @DisplayName("Генерация еженедельного отчета")
     void testGenerateWeeklyReport() {
         LocalDate weekAgo = LocalDate.now().minusWeeks(1);
         List<HabitLog> logs = Arrays.asList(
@@ -52,16 +62,18 @@ class HabitAnalyticsTest {
         );
 
         when(habitMock.getTitle()).thenReturn("Чай");
-        when(habitMock.getLogsForPeriod(weekAgo, LocalDate.now())).thenReturn(logs);
+        when(habitServiceMock.getLogsForPeriod(habitMock, weekAgo, LocalDate.now()))
+                .thenReturn(logs);
         long completedLogs = logs.stream().filter(HabitLog::isCompleted).count();
 
         habitAnalytics.generateWeeklyReport(habitMock);
 
-        verify(habitMock).getLogsForPeriod(weekAgo, LocalDate.now());
+        verify(habitServiceMock).getLogsForPeriod(habitMock, weekAgo, LocalDate.now());
         assertThat(completedLogs).isEqualTo(4);
     }
 
     @Test
+    @DisplayName("Генерация ежемесячного отчета")
     void testGenerateMonthlyReport() {
         LocalDate oneMonthAgo = LocalDate.now().minusMonths(1);
         List<HabitLog> logs = Arrays.asList(
@@ -71,14 +83,17 @@ class HabitAnalyticsTest {
                 new HabitLog(oneMonthAgo.plusDays(4), true)
         );
 
+        HabitManager habitManagerMock = mock(HabitManager.class);
+        Habit habitMock = mock(Habit.class);
+        HabitAnalytics habitAnalytics = new HabitAnalytics(habitManagerMock);
+
         when(habitMock.getTitle()).thenReturn("Чай");
-        when(habitMock.getLogsForPeriod(oneMonthAgo, LocalDate.now())).thenReturn(logs);
-        long completedLogs = logs.stream().filter(HabitLog::isCompleted).count();
+        when(habitManagerMock.getLogsForPeriod(habitMock, oneMonthAgo, LocalDate.now()))
+                .thenReturn(logs);
 
         habitAnalytics.generateMonthlyReport(habitMock);
 
-        verify(habitMock).getLogsForPeriod(oneMonthAgo, LocalDate.now());
-        assertThat(completedLogs).isEqualTo(3);
+        verify(habitManagerMock).getLogsForPeriod(habitMock, oneMonthAgo, LocalDate.now());
     }
 }
 

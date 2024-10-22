@@ -1,12 +1,13 @@
-package management;
+package application.usecase;
 
-import entity.User;
+import application.service.UserService;
+import core.model.User;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
 // Класс для управления пользователями
-public class UserManager {
+public class UserServiceImp implements UserService {
     private Map<String, User> users = new HashMap<>();
     private Map<String, Boolean> blockedUsers = new HashMap<>(); // Для хранения статуса блокировки пользователей
     public Scanner scanner = new Scanner(System.in);
@@ -76,18 +77,18 @@ public class UserManager {
         System.out.println("Профиль обновлен.");
     }
 
-        // Сброс пароля через email
-        public void resetPassword(String email) {
-            User user = users.get(email);
-            if (user != null) {
-                System.out.print("Введите новый пароль для пользователя " + email + ": ");
-                String newPassword = scanner.nextLine();
-                user.setPassword(newPassword);
-                System.out.println("Пароль успешно сброшен!");
-            } else {
-                System.out.println("Пользователь с таким email не найден.");
-            }
+    // Сброс пароля через email
+    public void resetPassword(String email) {
+        User user = users.get(email);
+        if (user != null) {
+            System.out.print("Введите новый пароль для пользователя " + email + ": ");
+            String newPassword = scanner.nextLine();
+            user.setPassword(newPassword);
+            System.out.println("Пароль успешно сброшен!");
+        } else {
+            System.out.println("Пользователь с таким email не найден.");
         }
+    }
 
     // Блокировка пользователя
     public void blockUser(String email) {

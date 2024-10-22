@@ -1,17 +1,19 @@
 import analytics.HabitAnalytics;
-import entity.User;
-import management.AdminManager;
-import management.HabitManager;
-import management.UserManager;
+import application.usecase.UserServiceImp;
+import core.model.User;
+import application.usecase.AdminServiceImp;
+import application.usecase.HabitManager;
+import presentation.CLI.AdminCLI;
 import tracking.HabitTracker;
 
 import java.util.Scanner;
 
 public class HabitsTrackerApplication {
-    private UserManager userManager = new UserManager();
+    private UserServiceImp userServiceImp = new UserServiceImp();
     private HabitManager habitManager;
-    private AdminManager adminManager;
-    private HabitAnalytics habitAnalytics = new HabitAnalytics();
+    private AdminServiceImp adminServiceImp;
+    private AdminCLI adminCLI;
+    private HabitAnalytics habitAnalytics;
     private Scanner scanner = new Scanner(System.in);
     private User currentUser;
 
@@ -21,38 +23,35 @@ public class HabitsTrackerApplication {
     }
 
     public HabitsTrackerApplication() {
-        adminManager = new AdminManager(userManager, scanner);
+        adminServiceImp = new AdminServiceImp(userServiceImp);
+        adminCLI = new AdminCLI(adminServiceImp,scanner);
         habitManager = new HabitManager(scanner, new HabitTracker(), habitAnalytics);
+        habitAnalytics = new HabitAnalytics(habitManager);
     }
 
     public void run() {
         System.out.println("Добро пожаловать в трекер привычек!");
 
         while (true) {
-            System.out.println("\n1. Вход");
-            System.out.println("2. Регистрация");
-            System.out.println("3. Сброс пароля");
-            System.out.println("4. Выход");
+            System.out.println("""
+                    1. Вход
+                    2. Регистрация
+                    3. Сброс пароля
+                    4. Выход
+                    """);
             System.out.print("Выберите опцию: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
 
             switch (choice) {
-                case 1:
-                    login();
-                    break;
-                case 2:
-                    register();
-                    break;
-                case 3:
-                    resetPassword();
-                    break;
-                case 4:
+                case 1 -> login();
+                case 2 -> register();
+                case 3 -> resetPassword();
+                case 4 -> {
                     System.out.println("До свидания!");
                     System.exit(0);
-                    break;
-                default:
-                    System.out.println("Неверный выбор. Пожалуйста, попробуйте снова.");
+                }
+                default -> System.out.println("Неверный выбор. Пожалуйста, попробуйте снова.");
             }
 
             if (currentUser != null) {
@@ -64,7 +63,7 @@ public class HabitsTrackerApplication {
     private void resetPassword() {
         System.out.print("Введите email для сброса пароля: ");
         String email = scanner.nextLine();
-        userManager.resetPassword(email);
+        userServiceImp.resetPassword(email);
     }
 
     // Метод для регистрации
@@ -80,7 +79,7 @@ public class HabitsTrackerApplication {
         String isAdminInput = scanner.nextLine().trim().toLowerCase();
         boolean isAdmin = isAdminInput.equals("да");
 
-        boolean success = userManager.registerUser(email, password, name, isAdmin); // Передаем роль
+        boolean success = userServiceImp.registerUser(email, password, name, isAdmin); // Передаем роль
         if (success) {
             System.out.println("Регистрация успешна. Теперь вы можете войти в систему.");
         } else {
@@ -95,58 +94,45 @@ public class HabitsTrackerApplication {
         System.out.print("Введите пароль: ");
         String password = scanner.nextLine();
 
-        currentUser = userManager.loginUser(email, password);
+        currentUser = userServiceImp.loginUser(email, password);
     }
 
     // Основное меню пользователя после входа
     private void mainMenu() {
         while (true) {
-            System.out.println("\nГлавное меню:");
-            System.out.println("1. Управление привычками");
-            System.out.println("2. Отметить выполнение привычки");
-            System.out.println("3. Просмотр отчета по привычкам");
-            System.out.println("4. Отчет о прогрессе пользователя");
-            System.out.println("5. Редактирование профиля");
-            System.out.println("6. Удалить аккаунт");
-            System.out.println("7. Выход из аккаунта");
+            System.out.print("""
+                    Главное меню:
+                    1. Управление привычками
+                    2. Отметить выполнение привычки
+                    3. Просмотр отчета по привычкам
+                    4. Отчет о прогрессе пользователя
+                    5. Редактирование профиля
+                    6. Удалить аккаунт
+                    7. Выход из аккаунта
+                    """);
 
             if (currentUser.isAdmin()) {
-                System.out.println("8. Меню администратора");
+                System.out.println("8. Меню администратора\n");
             }
 
             System.out.print("Выберите опцию: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
-
             switch (choice) {
-                case 1:
-                    habitManager.habitMenu(currentUser);
-                    break;
-                case 2:
-                    habitManager.markHabitCompleted(currentUser);
-                    break;
-                case 3:
-                    habitManager.generateHabitReport(currentUser);
-                    break;
-                case 4:
-                    habitAnalytics.generateUserProgressReport(currentUser);
-                    break;
-                case 5:
-                    userManager.editUserProfile(currentUser);
-                    break;
-                case 6:
-                    deleteAccount();
-                    break;
-                case 7:
+                case 1 -> habitManager.habitMenu(currentUser);
+                case 2 -> habitManager.markHabitCompleted(currentUser);
+                case 3 -> habitManager.generateHabitReport(currentUser);
+                case 4 -> habitAnalytics.generateUserProgressReport(currentUser);
+                case 5 -> userServiceImp.editUserProfile(currentUser);
+                case 6 -> deleteAccount();
+                case 7 -> {
                     logout();
                     return;
-                case 8:
-                    if (currentUser.isAdmin()) {
-                        adminManager.adminMenu();  // Вызов меню администратора
-                    }
-                    break;
-                default:
-                    System.out.println("Неверный выбор. Пожалуйста, попробуйте снова.");
+                }
+                case 8 -> {
+                    if (currentUser.isAdmin()) adminCLI.adminMenu();
+                }
+                default -> System.out.println("Неверный выбор. Пожалуйста, попробуйте снова.");
             }
         }
     }
@@ -161,9 +147,9 @@ public class HabitsTrackerApplication {
                 System.out.println("Администратор не может удалить свой аккаунт.");
                 return;
             }
-            userManager.deleteUser(currentUser.getEmail());
+            userServiceImp.deleteUser(currentUser.getEmail());
             System.out.println("Аккаунт удален.");
-            currentUser = null;  // Очистка текущего пользователя
+            currentUser = null;
             logout();
         } else {
             System.out.println("Удаление отменено.");
@@ -173,7 +159,7 @@ public class HabitsTrackerApplication {
     // Выход из аккаунта
     private void logout() {
         System.out.println("Вы вышли из аккаунта.");
-        currentUser = null;  // Обнуление текущего пользователя
-        run();  // Возвращение в главное меню (начать заново)
+        currentUser = null;
+        run();
     }
 }

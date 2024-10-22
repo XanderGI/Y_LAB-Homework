@@ -1,18 +1,19 @@
 package test.management;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import java.util.Scanner;
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 
-import management.HabitManager;
+import application.usecase.HabitManager;
 import org.mockito.MockitoAnnotations;
 import tracking.HabitTracker;
-import entity.User;
+import core.model.User;
 import analytics.HabitAnalytics;
-import entity.Habit;
+import core.model.Habit;
 
 class HabitManagerTest {
 
@@ -24,7 +25,6 @@ class HabitManagerTest {
 
     @BeforeEach
     void setUp() {
-        // Инициализация моков
         MockitoAnnotations.openMocks(this);
         scannerMock = Mockito.mock(Scanner.class);
         trackerMock = Mockito.mock(HabitTracker.class);
@@ -34,8 +34,9 @@ class HabitManagerTest {
     }
 
     @Test
+    @DisplayName("Создание привычки")
     void testCreateHabit() {
-        when(scannerMock.nextLine()).thenReturn("Вода").thenReturn("Пить 2 литра").thenReturn("ежедневно");
+        when(scannerMock.nextLine()).thenReturn("Вода").thenReturn("Пить 2 литра").thenReturn("1");
 
         habitManager.createHabit(user);
 
@@ -47,11 +48,11 @@ class HabitManagerTest {
     }
 
     @Test
+    @DisplayName("Удаление привычки")
     void testDeleteHabit() {
-        // Добавляем привычку в список пользователя
         Habit habit = new Habit("Вода", "Пить 2 литра", "ежедневно");
         user.addHabit(habit);
-        when(scannerMock.nextInt()).thenReturn(1); // Выбор привычки для удаления
+        when(scannerMock.nextInt()).thenReturn(1);
 
         habitManager.deleteHabit(user);
 
@@ -59,18 +60,18 @@ class HabitManagerTest {
     }
 
     @Test
+    @DisplayName("Изменение привычки")
     void testEditHabit() {
         Habit habit = new Habit("Вода", "Пить 2 литра", "ежедневно");
         user.addHabit(habit);
 
-        // Мокаем ввод для выбора привычки (выбор первой привычки в списке)
         when(scannerMock.nextInt()).thenReturn(1);
 
         when(scannerMock.nextLine())
-                .thenReturn("")  // Пропускаем лишний перевод строки
-                .thenReturn("Чай") // Название
-                .thenReturn("Пить 3 чашки чая") // Описание
-                .thenReturn("еженедельно"); // Частота
+                .thenReturn("")
+                .thenReturn("Чай")
+                .thenReturn("Пить 3 чашки чая")
+                .thenReturn("2");
 
 
         habitManager.editHabit(user);
@@ -81,24 +82,26 @@ class HabitManagerTest {
     }
 
     @Test
+    @DisplayName("Отметка о выполнении привычки")
     void testMarkHabitCompleted() {
         Habit habit = new Habit("Вода", "Пить 2 литра", "ежедневно");
         user.addHabit(habit);
-        when(scannerMock.nextInt()).thenReturn(1); // Выбор привычки
+        when(scannerMock.nextInt()).thenReturn(1);
 
         habitManager.markHabitCompleted(user);
 
-        verify(trackerMock, times(1)).markHabitCompleted(habit); // Убедимся, что метод трекера вызван
+        verify(trackerMock, times(1)).markHabitCompleted(habit);
     }
 
     @Test
+    @DisplayName("Создание отчета за определенный период")
     void testGenerateHabitReport() {
         Habit habit = new Habit("Вода", "Пить 2 литра", "ежедневно");
         user.addHabit(habit);
-        when(scannerMock.nextInt()).thenReturn(2); // Выбор отчета за неделю
+        when(scannerMock.nextInt()).thenReturn(2);
 
         habitManager.generateHabitReport(user);
 
-        verify(analyticsMock, times(1)).generateWeeklyReport(habit); // Проверяем, что отчет за неделю вызван единожды
+        verify(analyticsMock, times(1)).generateWeeklyReport(habit);
     }
 }

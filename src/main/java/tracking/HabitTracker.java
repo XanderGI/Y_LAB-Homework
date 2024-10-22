@@ -1,18 +1,15 @@
 package tracking;
 
-import entity.Habit;
-import entity.HabitLog;
+import core.model.Habit;
+import core.model.HabitLog;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public class HabitTracker {
-
     // Отметка выполнения привычки
     public void markHabitCompleted(Habit habit) {
         LocalDate today = LocalDate.now();
-
-        // Проверка, был ли лог за сегодняшний день
         boolean alreadyCompletedToday = habit.getLogs().stream()
                 .anyMatch(log -> log.getDate().equals(today) && log.isCompleted());
 
@@ -33,17 +30,15 @@ public class HabitTracker {
             return 0;
         }
 
-        // Сортируем логи по дате в обратном порядке (от свежих к старым)
         logs.sort((log1, log2) -> log2.getDate().compareTo(log1.getDate()));
 
         int streak = 0;
         LocalDate expectedDate = LocalDate.now();
 
         for (HabitLog log : logs) {
-            // Если лог выполнен и дата совпадает с ожидаемой
             if (log.isCompleted() && log.getDate().equals(expectedDate)) {
                 streak++;
-                expectedDate = expectedDate.minusDays(1);  // Ожидаем следующий день
+                expectedDate = expectedDate.minusDays(1);
             } else {
                 break;
             }

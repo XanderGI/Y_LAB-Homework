@@ -1,8 +1,8 @@
-package management;
+package application.usecase;
 
 import analytics.HabitAnalytics;
-import entity.Habit;
-import entity.User;
+import core.model.Habit;
+import core.model.User;
 import tracking.HabitTracker;
 
 import java.time.LocalDate;

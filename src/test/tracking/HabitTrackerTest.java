@@ -1,8 +1,9 @@
 package test.tracking;
 
-import entity.Habit;
-import entity.HabitLog;
+import core.model.Habit;
+import core.model.HabitLog;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import tracking.HabitTracker;
 
@@ -24,12 +25,13 @@ class HabitTrackerTest {
     }
 
     @Test
+    @DisplayName("Проверка 0-вой серии стрика")
     void testGetCurrentStreak_noLogs() {
-        // Когда нет логов, серия должна быть 0
         assertThat(HabitTracker.getCurrentStreak(habit)).isEqualTo(0);
     }
 
     @Test
+    @DisplayName("Проверка серии из 3-х подряд дней")
     void testGetCurrentStreak_continuousStreak() {
         LocalDate today = LocalDate.now();
         List<HabitLog> logs = Arrays.asList(
@@ -39,19 +41,18 @@ class HabitTrackerTest {
         );
         habit.setLogs(logs);
 
-        // Серия 3 дня подряд
         assertThat(HabitTracker.getCurrentStreak(habit)).isEqualTo(3);
     }
 
     @Test
+    @DisplayName("Прерывание стрика")
     void testGetCurrentStreak_interruptedStreak() {
-        //Тестирование, если стрик прервался
         LocalDate today = LocalDate.now();
         List<HabitLog> logs = Arrays.asList(
                 new HabitLog(today.minusDays(5),true),
                 new HabitLog(today.minusDays(4),true),
                 new HabitLog(today.minusDays(3), true),
-                new HabitLog(today.minusDays(1), true),  // Пропущен день 2
+                new HabitLog(today.minusDays(1), true),
                 new HabitLog(today, true)
         );
         habit.setLogs(logs);
@@ -60,21 +61,21 @@ class HabitTrackerTest {
     }
 
     @Test
+    @DisplayName("Проверяем, что привычка не может быть выполнена дважды за день")
     void testMarkHabitCompleted_alreadyCompletedToday() {
         LocalDate today = LocalDate.now();
         habit.addLog(new HabitLog(today, true));
 
         habitTracker.markHabitCompleted(habit);
 
-        // Проверяем, что второй раз выполнение не отмечено
         assertThat(habit.getLogs().size()).isEqualTo(1);
     }
 
     @Test
+    @DisplayName("Привычка отмечена успешно")
     void testMarkHabitCompleted_notCompletedYet() {
         habitTracker.markHabitCompleted(habit);
 
-        // Проверяем, что привычка была успешно отмечена как выполненная
         assertThat(habit.getLogs().size()).isEqualTo(1);
         assertThat(habit.getLogs().get(0).isCompleted()).isTrue();
     }
