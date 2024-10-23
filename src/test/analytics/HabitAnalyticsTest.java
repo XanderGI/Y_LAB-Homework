@@ -3,7 +3,7 @@ package test.analytics;
 import analytics.HabitAnalytics;
 import core.model.Habit;
 import core.model.HabitLog;
-import application.usecase.HabitManager;
+import application.usecase.HabitServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class HabitAnalyticsTest {
     private Habit habitMock;
 
     @Mock
-    private HabitManager habitServiceMock;
+    private HabitServiceImp habitServiceMock;
 
     private HabitAnalytics habitAnalytics;
 
@@ -83,17 +83,17 @@ class HabitAnalyticsTest {
                 new HabitLog(oneMonthAgo.plusDays(4), true)
         );
 
-        HabitManager habitManagerMock = mock(HabitManager.class);
+        HabitServiceImp HabitServiceImpMock = mock(HabitServiceImp.class);
         Habit habitMock = mock(Habit.class);
-        HabitAnalytics habitAnalytics = new HabitAnalytics(habitManagerMock);
+        HabitAnalytics habitAnalytics = new HabitAnalytics(HabitServiceImpMock);
 
         when(habitMock.getTitle()).thenReturn("Чай");
-        when(habitManagerMock.getLogsForPeriod(habitMock, oneMonthAgo, LocalDate.now()))
+        when(HabitServiceImpMock.getLogsForPeriod(habitMock, oneMonthAgo, LocalDate.now()))
                 .thenReturn(logs);
 
         habitAnalytics.generateMonthlyReport(habitMock);
 
-        verify(habitManagerMock).getLogsForPeriod(habitMock, oneMonthAgo, LocalDate.now());
+        verify(HabitServiceImpMock).getLogsForPeriod(habitMock, oneMonthAgo, LocalDate.now());
     }
 }
 

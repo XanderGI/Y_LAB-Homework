@@ -1,30 +1,31 @@
 package analytics;
 
+import application.service.HabitService;
+import application.usecase.HabitServiceImp;
 import core.model.Habit;
 import core.model.HabitLog;
 import core.model.User;
-import application.usecase.HabitManager;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static tracking.HabitTracker.getCurrentStreak;
+
 
 public class HabitAnalytics {
-    private HabitManager habitManager;
+    private HabitService habitService;
 
-    public HabitAnalytics(HabitManager habitManager) {
-        this.habitManager = habitManager;
+    public HabitAnalytics(HabitService habitService) {
+        this.habitService = habitService;
     }
 
     // Генерация отчета по привычкам пользователя за день
     public void generateDailyReport(Habit habit) {
         LocalDate today = LocalDate.now();
-        List<HabitLog> logsForToday = habitManager.getLogsForPeriod(habit, today, today);
+        List<HabitLog> logsForToday = habitService.getLogsForPeriod(habit, today, today);
 
         long completedLogs = logsForToday.stream().filter(HabitLog::isCompleted).count();
-        int streak = getCurrentStreak(habit);
+        int streak = habitService.getCurrentStreakHabit(habit);
 
         System.out.println(String.format("Привычка: %s", habit.getTitle()));
         System.out.println("Выполнение за сегодня: " + (completedLogs > 0 ? "выполнена" : "не выполнена"));
@@ -34,11 +35,11 @@ public class HabitAnalytics {
     // Генерация отчета по привычкам пользователя за неделю
     public void generateWeeklyReport(Habit habit) {
         LocalDate weekAgo = LocalDate.now().minusWeeks(1);
-        List<HabitLog> logsForWeek = habitManager.getLogsForPeriod(habit, weekAgo, LocalDate.now());
+        List<HabitLog> logsForWeek = habitService.getLogsForPeriod(habit, weekAgo, LocalDate.now());
 
         long completedLogs = logsForWeek.stream().filter(HabitLog::isCompleted).count();
         long totalDays = weekAgo.until(LocalDate.now()).getDays() + 1;
-        int streak = getCurrentStreak(habit);
+        int streak = habitService.getCurrentStreakHabit(habit);
 
         double completionRate = ((double) completedLogs / totalDays) * 100;
         System.out.println(String.format("Привычка: %s", habit.getTitle()));
@@ -49,11 +50,11 @@ public class HabitAnalytics {
     // Генерация отчета по привычкам пользователя за последний месяц
     public void generateMonthlyReport(Habit habit) {
         LocalDate oneMonthAgo = LocalDate.now().minusMonths(1);
-        List<HabitLog> logsForMonth = habitManager.getLogsForPeriod(habit, oneMonthAgo, LocalDate.now());
+        List<HabitLog> logsForMonth = habitService.getLogsForPeriod(habit, oneMonthAgo, LocalDate.now());
 
         long completedLogs = logsForMonth.stream().filter(HabitLog::isCompleted).count();
         long totalDays = ChronoUnit.DAYS.between(oneMonthAgo, LocalDate.now()) + 1;
-        int streak = getCurrentStreak(habit);
+        int streak = habitService.getCurrentStreakHabit(habit);
 
         double completionRate = ((double) completedLogs / totalDays) * 100;
         System.out.println(String.format("Привычка: %s", habit.getTitle()));

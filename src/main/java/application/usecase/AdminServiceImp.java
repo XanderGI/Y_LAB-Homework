@@ -1,15 +1,16 @@
 package application.usecase;
 
 import application.service.AdminService;
+import application.service.UserService;
 import core.model.Habit;
 import core.model.User;
 
 import java.util.Map;
 
 public class AdminServiceImp implements AdminService {
-    private UserServiceImp userService;
+    private UserService userService;
 
-    public AdminServiceImp(UserServiceImp userService) {
+    public AdminServiceImp(UserService userService) {
         this.userService = userService;
     }
 

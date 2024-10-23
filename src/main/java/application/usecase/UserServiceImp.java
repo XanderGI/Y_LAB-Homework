@@ -10,7 +10,6 @@ import java.util.Scanner;
 public class UserServiceImp implements UserService {
     private Map<String, User> users = new HashMap<>();
     private Map<String, Boolean> blockedUsers = new HashMap<>(); // Для хранения статуса блокировки пользователей
-    public Scanner scanner = new Scanner(System.in);
 
     // Регистрация нового пользователя
     public boolean registerUser(String email, String password, String name, boolean isAdmin) {
@@ -19,8 +18,7 @@ public class UserServiceImp implements UserService {
             return false;
         }
         users.put(email, new User(email, password, name, isAdmin));
-        blockedUsers.put(email, false); // Изначально пользователь не заблокирован
-        System.out.println("Регистрация успешна!");
+        blockedUsers.put(email, false);
         return true;
     }
 
@@ -44,7 +42,7 @@ public class UserServiceImp implements UserService {
     // Удаление пользователя
     public boolean deleteUser(String email) {
         if (users.remove(email) != null) {
-            blockedUsers.remove(email); // Удаляем из списка блокировок
+            blockedUsers.remove(email);
             System.out.println("Пользователь успешно удалён.");
             return true;
         }
@@ -53,41 +51,25 @@ public class UserServiceImp implements UserService {
     }
 
     // Редактирование профиля пользователя
-    public void editUserProfile(User user) {
-        System.out.println("Редактирование профиля...");
-        System.out.print("Введите новое имя (текущие: " + user.getName() + "): ");
-        String newName = scanner.nextLine();
-        System.out.print("Введите новый email (текущий: " + user.getEmail() + "): ");
-        String newEmail = scanner.nextLine();
-        System.out.print("Введите новый пароль: ");
-        String newPassword = scanner.nextLine();
+    public void editUserProfile(User user, String newName, String newEmail, String newPassword) {
         user.setName(newName);
         user.setPassword(newPassword);
-        String oldEmail = user.getEmail();  // Сохраняем старый email перед его обновлением
-        // Обновляем email пользователя
+        String oldEmail = user.getEmail();
         if (!oldEmail.equals(newEmail)) {
-            user.setEmail(newEmail);  // Меняем email на новый
-            users.remove(oldEmail);  // Удаляем запись со старым email
-            users.put(newEmail, user);  // Добавляем запись с новым email
-            blockedUsers.put(newEmail, blockedUsers.remove(oldEmail));  // Переносим статус блокировки
+            user.setEmail(newEmail);
+            users.remove(oldEmail);
+            users.put(newEmail, user);
+            blockedUsers.put(newEmail, blockedUsers.remove(oldEmail));
         } else {
             System.out.println("Новый email не должен совпадать со старым email!");
         }
-
         System.out.println("Профиль обновлен.");
     }
 
-    // Сброс пароля через email
-    public void resetPassword(String email) {
-        User user = users.get(email);
-        if (user != null) {
-            System.out.print("Введите новый пароль для пользователя " + email + ": ");
-            String newPassword = scanner.nextLine();
-            user.setPassword(newPassword);
-            System.out.println("Пароль успешно сброшен!");
-        } else {
-            System.out.println("Пользователь с таким email не найден.");
-        }
+    // Сброс пароля
+    public void resetPassword(User user, String newPassword) {
+        user.setPassword(newPassword);
+        System.out.println("Пароль успешно сброшен!");
     }
 
     // Блокировка пользователя
